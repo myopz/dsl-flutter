@@ -1,0 +1,10 @@
+# dsl_flutter/build.yaml
+
+builders:
+  dslBuilder:
+    target: ":dsl_flutter"
+    import: "package:dsl_flutter/builder.dart"
+    builder_factories: ["dslBuilder"]
+    build_extensions: {".dui": [".dsl.dart"]}
+    auto_apply: dependents
+    build_to: source

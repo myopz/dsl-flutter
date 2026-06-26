@@ -3,7 +3,7 @@ DSL Flutter 🚀
 </h1>
 
 <p align="center">
-  告别括号地狱，用缩进书写 Flutter！
+  Say goodbye to bracket hell. Write Flutter with indentation!
 </p>
 
 <p align="center">
@@ -31,36 +31,36 @@ DSL Flutter 🚀
 </p>
 
 <p align="center">
-  <a href="#-特性">特性</a> |
-  <a href="#-安装">安装</a> |
-  <a href="#-快速开始">快速开始</a> |
-  <a href="#-语法指南">语法指南</a> |
-  <a href="#-高级特性">高级特性</a> |
-  <a href="#-配置">配置</a> |
-  <a href="#-cli-命令">CLI 命令</a> |
-  <a href="#-捐赠支持">捐赠支持</a> |
-  <a href="#-贡献">贡献</a> |
-  <a href="#-许可证">许可证</a>
+  <a href="#-features">Features</a> |
+  <a href="#-installation">Installation</a> |
+  <a href="#-quick-start">Quick Start</a> |
+  <a href="#-syntax-guide">Syntax Guide</a> |
+  <a href="#-advanced-features">Advanced Features</a> |
+  <a href="#-configuration">Configuration</a> |
+  <a href="#-cli-commands">CLI Commands</a> |
+  <a href="#-donate">Donate</a> |
+  <a href="#-contributing">Contributing</a> |
+  <a href="#-license">License</a>
 </p>
 
 ---
 
-## ✨ 特性
+## ✨ Features
 
-- 🎯 **零括号** - 告别 `(`, `)`, `,` 的嵌套地狱
-- 📦 **缩进即层级** - 用缩进直观表达 Widget 树结构
-- 🎨 **组件别名** - 为常用组件创建简短别名
-- 🧩 **模板片段** - 复用 UI 结构，DRY 原则
-- ⚡ **编译时转换** - 零运行时开销，性能无损
-- 🔌 **完全通用** - 支持所有 Flutter 及第三方组件
-- 🛡️ **防格式化** - 一键配置，防止 IDE 自动破坏 DSL
-- 🧪 **完整测试** - 100% 测试覆盖率保证
+- 🎯 **Zero Brackets** - No more `(`, `)`, nesting hell
+- 📦 **Indentation as Hierarchy** - Express widget tree with indentation
+- 🎨 **Component Aliases** - Create short aliases for common widgets
+- 🧩 **Template Fragments** - Reusable UI structures (DRY)
+- ⚡ **Compile-time** - Zero runtime overhead
+- 🔌 **Universal** - Works with all Flutter and third-party widgets
+- 🛡️ **Formatter Protection** - One-command setup to prevent IDE formatting issues
+- 🧪 **Fully Tested** - 100% test coverage guarantee
 
 ---
 
-## 📦 安装
+## 📦 Installation
 
-### 方式一：添加到项目（推荐）
+### Option 1: Add to project (Recommended)
 
 ```yaml
 dev_dependencies:
@@ -68,13 +68,13 @@ dev_dependencies:
   build_runner: ^2.4.0
 ```
 
-然后运行：
+Then run:
 
 ```bash
 flutter pub get
 ```
 
-### 方式二：全局安装 CLI 工具
+### Option 2: Global CLI installation
 
 ```bash
 dart pub global activate dsl_flutter
@@ -82,17 +82,17 @@ dart pub global activate dsl_flutter
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 1. 配置开发环境（防止格式化破坏）
+### 1. Setup development environment
 
 ```bash
 dsl_flutter setup
 ```
 
-### 2. 创建 DSL 文件
+### 2. Create a DSL file
 
-创建 `lib/pages/home.dui`：
+Create `lib/pages/home.dui`:
 
 ```dart
 import 'package:flutter/material.dart';
@@ -123,12 +123,12 @@ class _HomePageState extends State<HomePage> {
         child: Column
           mainAxisAlignment: MainAxisAlignment.center
           children: [
-            Text '点击次数'
+            Text 'Click count'
             Text '$_counter'
               style: Theme.of(context).textTheme.headlineMedium
-            @PrimaryButton
+            PrimaryButton
               onPressed: _increment
-              child: Text '增加'
+              child: Text 'Increment'
           ]
       floatingActionButton: FloatingActionButton
         onPressed: _increment
@@ -137,24 +137,24 @@ class _HomePageState extends State<HomePage> {
 }
 ```
 
-### 3. 运行代码生成
+### 3. Run code generation
 
 ```bash
-flutter pub run build_runner build --delete-conflicting-outputs
+flutter pub run build_runner build
 ```
 
-### 4. 使用生成的代码
+### 4. Use generated code
 
 ```dart
 import 'pages/home.dsl.dart';
 
-// 直接使用
+// Use directly
 HomePage()
 ```
 
 ---
 
-## 📝 语法指南
+## 📝 Syntax Guide
 
 ### 传统写法 - 嵌套地狱
 
@@ -197,14 +197,13 @@ Scaffold(
 采用缩进表达 Widget 树结构，清晰明了。
 
 ```dart
-// ✅ DSL 写法 - 清晰简洁
 Scaffold
   appBar: AppBar
-    title: Text '首页'
+    title: Text 'Home'
     backgroundColor: Colors.blue
   body: Column
     children: [
-      Text '标题'
+      Text 'Title'
       Row
         children: [
           Icon Icons.star
@@ -225,16 +224,14 @@ Scaffold
         ]
     ]
 ```
-
-### 基础的 Widget
+### Basic Widget
 
 ```dart
 Container
   padding: EdgeInsets.all(16)
   child: Text 'Hello'
 ```
-
-### 带参数的 Widget
+### Widgets with Parameters
 
 ```dart
 Text 'Hello World'
@@ -244,22 +241,22 @@ Text 'Hello World'
     color: Colors.blue
 ```
 
-### 自定义 Widget
+### Custom Widgets
 
 ```dart
 MyCustomWidget
-  title: '自定义'
+  title: 'Custom'
   onTap: _handleTap
-  child: Text '内容'
+  child: Text 'Content'
 ```
 
-### 条件渲染
+### Conditional Rendering
 
 ```dart
 Column
   children: [
     if (isLoggedIn){
-      Text '欢迎回来'
+      Text 'Welcome back'
     } else {
       LoginButton()
     }
@@ -273,24 +270,25 @@ Column
 
 ---
 
-## 🎨 高级特性
+## 🎨 Advanced Features
 
-### 组件别名
+### Component Aliases
 
 ```dart
 @Alias('PrimaryButton', target: 'ElevatedButton')
 @Alias('SecondaryButton', target: 'TextButton')
 
-// 使用
+// Usage
 PrimaryButton(
   onPressed: _onTap
-  child: Text '提交'
+  child: Text 'Submit'
 )
 ```
 
-### 模板片段
 
-#### 定义片段
+### Template Fragments (Two Calling Styles)
+
+#### Define Fragment
 
 ```dart
 @Fragment('UserCard', ['name', 'email', 'avatar'], '''
@@ -306,20 +304,21 @@ Card(
 ''')
 ```
 
-前缀调用（无括号）
+#### Prefix Call (no parentheses!)
 
 ```dart
-@UserCard  // ← 无括号！
-  name: '张三'
-  email: 'zhangsan@example.com'
+@UserCard(
+  name: 'John Doe'
+  email: 'john@example.com'
   avatar: 'https://example.com/avatar.jpg'
+)
 ```
 
-### 待实现功能
+### TODO
 
-#### 默认参数
+#### Default Parameters
 
-`未实现`
+not implemented
 
 ```dart
 @Default('Card', {
@@ -328,11 +327,7 @@ Card(
   'shape': 'RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))'
 })
 
-```
-
-#### 混入
-
-`未实现`
+#### Mixins
 
 ```dart
 @Mixin('CardStyle', ['Card', 'Container'], {
@@ -344,11 +339,11 @@ Card(
 
 ---
 
-## 🔧 配置
+## 🔧 Configuration
 
-### VS Code 配置
+### VS Code Configuration
 
-`dsl_flutter setup` 会自动创建以下配置：
+`dsl_flutter setup` automatically creates these configurations:
 
 ```json
 // .vscode/settings.json
@@ -356,7 +351,7 @@ Card(
   "[dart]": {
     "editor.formatOnSave": true
   },
-  "[dui]": {
+  "[dart-ui]": {
     "editor.formatOnSave": false,
     "editor.tabSize": 2,
     "editor.insertSpaces": true
@@ -389,67 +384,80 @@ targets:
 
 ---
 
-## 📚 CLI 命令
+## 📚 CLI Commands
 
 ```bash
-dsl_flutter --help       # 显示帮助
-dsl_flutter setup        # 配置开发环境
-dsl_flutter init         # 初始化项目
-dsl_flutter watch        # 监听文件并自动转换
-dsl_flutter build        # 一次性构建所有文件
-dsl_flutter check        # 检查文件格式
+dsl_flutter --help       # Show help
+dsl_flutter setup        # Setup development environment
+dsl_flutter init         # Initialize project
+dsl_flutter watch        # Watch files and auto-convert
+dsl_flutter build        # Build all files once
+dsl_flutter check        # Check file formatting
 ```
 
 ---
 
-## 💝 捐赠支持
+## 🔗 Documentation
 
-如果您觉得 DSL Flutter 对您有帮助，欢迎捐赠支持项目持续发展！
+- [Example Project](https://github.com/myopz/dsl-flutter/tree/main/example)
+- [Changelog](https://github.com/myopz/dsl-flutter/blob/main/CHANGELOG.md)
+
+---
+
+## 💝 Donate
+
+If DSL Flutter has been helpful to you, please consider donating to support the project's continued development!
+
+### Scan to Donate
 
 <table>
   <tr>
     <td align="center" width="50%">
-      <h3>支付宝</h3>
-      <img src="./assets/alipay_qr.jpg" width="200" alt="支付宝收款码">
-      <p><small>支付宝扫码捐赠</small></p>
+      <h3>Alipay</h3>
+      <img src="./assets/alipay_qr.jpg" width="200" alt="Alipay QR Code">
+      <p><small>Scan with Alipay</small></p>
     </td>
     <td align="center" width="50%">
-      <h3>微信支付</h3>
-      <img src="./assets/wechat_qr.jpg" width="200" alt="微信收款码">
-      <p><small>微信扫码捐赠</small></p>
+      <h3>WeChat Pay</h3>
+      <img src="./assets/wechat_qr.jpg" width="200" alt="WeChat QR Code">
+      <p><small>Scan with WeChat</small></p>
     </td>
   </tr>
 </table>
 
-## 🤝 贡献
-
-欢迎贡献！
-
-1. Fork 仓库
-2. 创建功能分支 (`git checkout -b feature/amazing`)
-3. 提交更改 (`git commit -m 'Add amazing feature'`)
-4. 推送分支 (`git push origin feature/amazing`)
-5. 创建 Pull Request
 
 ---
 
-## 📄 许可证
+## 🤝 Contributing
 
-本项目采用 [MIT License](LICENSE) 开源。
+Contributions are welcome!
 
----
-
-## 💬 交流与支持
-
-- [GitHub Issues](https://github.com/myopz/dsl-flutter/issues) - Bug 报告和功能请求
-- [GitHub Discussions](https://github.com/myopz/dsl-flutter/discussions) - 讨论和交流
-- [Email](mailto:mr_jianlong@163.com) - 邮件联系 <mr_jianlong@163.com>
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open a Pull Request
 
 ---
 
-## ⭐ 支持我们
 
-如果这个项目对你有帮助，请给个 Star ⭐️
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## 💬 Community & Support
+
+- [GitHub Issues](https://github.com/myopz/dsl-flutter/issues) - Bug reports & feature requests
+- [GitHub Discussions](https://github.com/myopz/dsl-flutter/discussions) - Discussions & Q&A
+- [Email](mailto:mr_jianlong@163.com) - Contact via email <mr_jianlong@163.com>
+
+---
+
+## ⭐ Support Us
+
+If this project helps you, please give it a Star ⭐️
 
 [![Star History Chart](https://api.star-history.com/svg?repos=myopz/dsl-flutter&type=Date)](https://star-history.com/#myopz/dsl-flutter&Date)
 

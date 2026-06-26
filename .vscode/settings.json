@@ -1,0 +1,20 @@
+{
+  "[dart]": {
+    "editor.formatOnSave": true
+  },
+  "[dui]": {
+    "editor.formatOnSave": false,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "files.associations": {
+    "*.dui": "dart"
+  },
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#1D312C",
+    "titleBar.activeBackground": "#29453E",
+    "titleBar.activeForeground": "#FAFCFB",
+    "titleBar.inactiveBackground": "#01360C",
+    "titleBar.inactiveForeground": "#ECFFF0"
+  }
+}

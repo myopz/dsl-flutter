@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      dsl_flutter|dslBuilder:
+        enabled: true
+        generate_for:
+          - lib/**/*.dui
