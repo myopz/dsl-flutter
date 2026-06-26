@@ -5,9 +5,6 @@ homepage: https://github.com/myopz/dsl-flutter
 repository: https://github.com/myopz/dsl-flutter
 issue_tracker: https://github.com/myopz/dsl-flutter/issues
 
-
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-
 environment:
   sdk: ^3.10.7
 
