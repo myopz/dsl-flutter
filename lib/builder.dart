@@ -73,17 +73,6 @@ $generated
       rethrow;
     }
   }
-
-  List<String> _extractImports(String content) {
-    final imports = <String>[];
-    for (final line in content.split('\n')) {
-      final trimmed = line.trim();
-      if (trimmed.startsWith('import ')) {
-        imports.add(trimmed);
-      }
-    }
-    return imports;
-  }
 }
 
 /// 工厂函数 - 返回自定义 Builder

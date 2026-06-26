@@ -419,95 +419,6 @@ ${_cyan('💡 提示:')} 使用前缀 @ 可以无括号调用片段！
     return open > 0;
   }
 
-
-  String _transformLine(String line) {
-    var result = line.trim();
-
-    // 检测是否是片段调用（@前缀）
-    if (result.startsWith('@')) {
-      // 排除注解定义
-      if (result.startsWith('@Alias') ||
-          result.startsWith('@Default') ||
-          result.startsWith('@Fragment') ||
-          result.startsWith('@Mixin')) {
-        return result;
-      }
-      // 片段调用：@UserCard name: '张三'
-      final name = result.substring(1).trim();
-      if (_fragments.containsKey(name)) {
-        // 返回片段名称，参数会在后续处理
-        return name;
-      }
-      return result;
-    }
-
-    // 跳过特殊行，不添加逗号或转换
-    if (result.startsWith('import ') ||
-        result.startsWith('class ') ||
-        result.startsWith('return ') ||
-        result.startsWith('@override') ||
-        result.contains('{') ||
-        result.contains('}')) {
-      return result;
-    }
-
-    // 处理 WidgetName argument 模式 (例如: Text 'Hello' -> Text('Hello'))
-    result = _convertWidgetWithArgs(result);
-
-    // 处理包含冒号的行（属性赋值）
-    // 例如: appBar: AppBar, child: Text('Hello')
-    if (result.contains(':') && !result.startsWith('import ')) {
-      final colonIndex = result.indexOf(':');
-      final key = result.substring(0, colonIndex).trim();
-      var value = result.substring(colonIndex + 1).trim();
-
-      // 转换值中的 WidgetName argument 模式
-      value = _convertWidgetWithArgs(value);
-
-      return '$key: $value';
-    }
-
-    // 处理 children 关键字
-    if (result == 'children') {
-      return 'children: [';
-    }
-
-    // 处理 child 关键字
-    if (result == 'child') {
-      return 'child: ';
-    }
-
-    return result;
-  }
-
-  /// 转换 WidgetName argument 模式为 WidgetName(argument)
-  String _convertWidgetWithArgs(String line) {
-    final trimmed = line.trim();
-    if (trimmed.isEmpty) return line;
-
-    // 匹配模式: 单词 后跟 参数
-    // 例如: Text 'Hello', Icon Icons.add, Padding 16
-    final regex = RegExp(r'^(\w+)\s+(.+)$');
-    final match = regex.firstMatch(trimmed);
-    
-    if (match != null) {
-      final firstWord = match.group(1)!;
-      final rest = match.group(2)!;
-      
-      // 检查第一个单词是否是Widget
-      if (_isWidgetNameSimple(firstWord)) {
-        // 如果参数已经有括号，不添加
-        if (rest.contains('(') && rest.contains(')')) {
-          return trimmed;
-        }
-        // 添加括号
-        return '$firstWord($rest)';
-      }
-    }
-    
-    return line;
-  }
-
   /// 简单检查是否是Widget名称（不带前缀/冒号）
   bool _isWidgetNameSimple(String name) {
     // 检查内置Widget
@@ -517,32 +428,6 @@ ${_cyan('💡 提示:')} 使用前缀 @ 可以无括号调用片段！
 
     // 检查自定义Widget（大写字母开头）
     if (RegExp(r'^[A-Z]').hasMatch(name)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  bool _isWidgetName(String line) {
-    final name = line.trim().split(' ').first;
-
-    // 如果是片段，返回false
-    if (_fragments.containsKey(name)) {
-      return false;
-    }
-
-    // 检查内置Widget
-    if (builtInWidgets.contains(name)) {
-      return true;
-    }
-
-    // 检查自定义Widget（大写字母开头）
-    if (RegExp(r'^[A-Z]').hasMatch(name)) {
-      return true;
-    }
-
-    // 检查方法（下划线开头）
-    if (name.startsWith('_') || name.startsWith('build')) {
       return true;
     }
 
