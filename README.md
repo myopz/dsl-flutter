@@ -390,12 +390,12 @@ dsl_flutter check        # 检查文件格式
   <tr>
     <td align="center" width="50%">
       <h3>支付宝</h3>
-      <img src="./assets/alipay_qr.jpg" width="200" alt="支付宝收款码">
+      <img src="assets/alipay_qr.jpg" width="200" alt="支付宝收款码">
       <p><small>支付宝扫码捐赠</small></p>
     </td>
     <td align="center" width="50%">
       <h3>微信支付</h3>
-      <img src="./assets/wechat_qr.jpg" width="200" alt="微信收款码">
+      <img src="assets/wechat_qr.jpg" width="200" alt="微信收款码">
       <p><small>微信扫码捐赠</small></p>
     </td>
   </tr>

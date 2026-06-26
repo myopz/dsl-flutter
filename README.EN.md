@@ -307,8 +307,11 @@ not implemented
   'margin': 'EdgeInsets.all(16)',
   'shape': 'RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))'
 })
+```
 
 #### Mixins
+
+not implemented
 
 ```dart
 @Mixin('CardStyle', ['Card', 'Container'], {
@@ -395,12 +398,12 @@ If DSL Flutter has been helpful to you, please consider donating to support the 
   <tr>
     <td align="center" width="50%">
       <h3>Alipay</h3>
-      <img src="./assets/alipay_qr.jpg" width="200" alt="Alipay QR Code">
+      <img src="assets/alipay_qr.jpg" width="200" alt="Alipay QR Code">
       <p><small>Scan with Alipay</small></p>
     </td>
     <td align="center" width="50%">
       <h3>WeChat Pay</h3>
-      <img src="./assets/wechat_qr.jpg" width="200" alt="WeChat QR Code">
+      <img src="assets/wechat_qr.jpg" width="200" alt="WeChat QR Code">
       <p><small>Scan with WeChat</small></p>
     </td>
   </tr>
