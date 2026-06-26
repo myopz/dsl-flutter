@@ -6,6 +6,10 @@ DSL Flutter 🚀
   Say goodbye to bracket hell. Write Flutter with indentation!
 </p>
 
+<p align="center">
+  <a href="README.md">中文</a>
+</p>
+
 
 <p align="center">
   <a href="#-features">Features</a> |
@@ -133,12 +137,12 @@ HomePage()
 
 ## 📝 Syntax Guide
 
-### 传统写法 - 嵌套地狱
+### Traditional Syntax - Bracket Hell
 
-有一堆嵌套的括号，导致代码难以阅读和维护。
+Lots of nested parentheses make code hard to read and maintain.
 
 ```dart
-// ❌ 传统写法 - 嵌套地狱
+// ❌ Traditional Syntax - Bracket Hell
 Scaffold(
   appBar: AppBar(title: Text('首页'), backgroundColor: Colors.blue),
   body: Column(
@@ -169,9 +173,9 @@ Scaffold(
 )
 ```
 
-### DSL 写法 - 清晰简洁
+### DSL Syntax - Clean and Concise
 
-采用缩进表达 Widget 树结构，清晰明了。
+Use indentation to express widget tree structure, clear and intuitive.
 
 ```dart
 Scaffold
@@ -184,19 +188,19 @@ Scaffold
       Row
         children: [
           Icon Icons.star
-          Text '评分 4.8'
+          Text 'Rating 4.8'
           Column
             children: [
               ElevatedButton
                 onPressed: () => {}
-                child: Text '点击'
+                child: Text 'Click'
               Text 'Hello World'
                 style: TextStyle
                   fontSize: 20
                   fontWeight: FontWeight.bold
                   color: Colors.blue
               Card
-                child: Text '内容'
+                child: Text 'Content'
             ]
         ]
     ]

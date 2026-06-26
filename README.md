@@ -7,6 +7,10 @@ DSL Flutter 🚀
 </p>
 
 <p align="center">
+  <a href="README.EN.md">English</a>
+</p>
+
+<p align="center">
   <a href="#-特性">特性</a> |
   <a href="#-安装">安装</a> |
   <a href="#-快速开始">快速开始</a> |
