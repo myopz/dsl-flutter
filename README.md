@@ -7,30 +7,6 @@ DSL Flutter 🚀
 </p>
 
 <p align="center">
-  <a href="https://pub.dev/packages/dsl_flutter">
-    <img src="https://img.shields.io/pub/v/dsl_flutter.svg" alt="Pub Version">
-  </a>
-  <a href="https://github.com/myopz/dsl-flutter/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/myopz/dsl-flutter/test.yml?branch=main" alt="Build Status">
-  </a>
-  <a href="https://codecov.io/gh/myopz/dsl-flutter">
-    <img src="https://img.shields.io/codecov/c/github/myopz/dsl-flutter" alt="Code Coverage">
-  </a>
-  <a href="https://github.com/myopz/dsl-flutter/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/myopz/dsl-flutter" alt="License">
-  </a>
-  <a href="https://github.com/myopz/dsl-flutter/stargazers">
-    <img src="https://img.shields.io/github/stars/myopz/dsl-flutter" alt="Stars">
-  </a>
-  <a href="https://github.com/myopz/dsl-flutter/issues">
-    <img src="https://img.shields.io/github/issues/myopz/dsl-flutter" alt="Issues">
-  </a>
-  <a href="https://github.com/myopz/dsl-flutter/forks">
-    <img src="https://img.shields.io/github/forks/myopz/dsl-flutter" alt="Forks">
-  </a>
-</p>
-
-<p align="center">
   <a href="#-特性">特性</a> |
   <a href="#-安装">安装</a> |
   <a href="#-快速开始">快速开始</a> |
