@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
             Text 'Click count'
             Text '$_counter'
               style: Theme.of(context).textTheme.headlineMedium
-            PrimaryButton
+            @PrimaryButton
               onPressed: _increment
               child: Text 'Increment'
           ]
@@ -257,10 +257,9 @@ Column
 
 ```dart
 @Alias('PrimaryButton', target: 'ElevatedButton')
-@Alias('SecondaryButton', target: 'TextButton')
 
 // Usage
-PrimaryButton(
+@PrimaryButton(
   onPressed: _onTap
   child: Text 'Submit'
 )

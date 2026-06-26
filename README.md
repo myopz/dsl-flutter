@@ -259,10 +259,9 @@ Column
 
 ```dart
 @Alias('PrimaryButton', target: 'ElevatedButton')
-@Alias('SecondaryButton', target: 'TextButton')
 
 // 使用
-PrimaryButton(
+@PrimaryButton(
   onPressed: _onTap
   child: Text '提交'
 )
