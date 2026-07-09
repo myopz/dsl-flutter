@@ -4,7 +4,7 @@
 // Run with: dart test
 //
 // Covers: simple widget trees, leaf args, property classification, list
-// literals, block bodies, class members, @Alias/@Fragment/@Default/@Mixin,
+// literals, block bodies, class members, @Fragment,
 // comments, Widget.method, inline semicolons, and golden tests.
 
 import 'dart:io';
@@ -282,51 +282,6 @@ class _State extends State<Widget> {
   });
 
   // ─────────────────────────────────────────────────────────────────
-  group('@Alias', () {
-    test('@PrimaryButton → ElevatedButton', () {
-      final input = """
-@Alias('PrimaryButton', target: 'ElevatedButton')
-
-return Scaffold
-  body: Column
-    children: [
-      @PrimaryButton
-        onPressed: _increment
-        child: Text 'OK'
-    ]
-""";
-      final output = parser.parse(input);
-      expect(output, contains('ElevatedButton('));
-      expect(output, isNot(contains('@PrimaryButton')));
-      expect(output, isNot(contains('PrimaryButton')));
-    });
-
-    test('return @MainCard → return Card(', () {
-      final input = """
-@Alias('MainCard', target: 'Card')
-
-return @MainCard
-  margin: EdgeInsets.all(16)
-  child: Text 'Hi'
-""";
-      final output = parser.parse(input);
-      expect(output, contains('return Card('));
-      expect(output, isNot(contains('@MainCard')));
-    });
-
-    test('@Alias definition NOT in output', () {
-      final input = """
-@Alias('PrimaryButton', target: 'ElevatedButton')
-
-return Scaffold
-  body: Text 'Hi'
-""";
-      final output = parser.parse(input);
-      expect(output, isNot(contains('@Alias(')));
-    });
-  });
-
-  // ─────────────────────────────────────────────────────────────────
   group('@Fragment', () {
     test('@UserCard expansion with param substitution', () {
       final input = """
@@ -375,79 +330,6 @@ return Scaffold
 """;
       final output = parser.parse(input);
       expect(output, isNot(contains('@Fragment(')));
-    });
-  });
-
-  // ─────────────────────────────────────────────────────────────────
-  group('@Default', () {
-    test('Text gets default style injected', () {
-      final input = """
-@Default('Text', {
-  'style': 'TextStyle(fontSize: 16)'
-})
-
-return Scaffold
-  body: Text 'Hello'
-""";
-      final output = parser.parse(input);
-      expect(output, contains('style: TextStyle(fontSize: 16)'));
-    });
-
-    test('@Default does NOT inject duplicate when param exists', () {
-      final input = """
-@Default('Text', {
-  'style': 'TextStyle(fontSize: 16)'
-})
-
-return Scaffold
-  body: Text 'Hello'
-    style: TextStyle(fontSize: 20)
-""";
-      final output = parser.parse(input);
-      // Should have fontSize: 20 (user-specified), not injected fontSize: 16
-      expect(output, contains('fontSize: 20'));
-    });
-
-    test('@Default definition NOT in output', () {
-      final input = """
-@Default('Text', {
-  'style': 'TextStyle(fontSize: 16)'
-})
-
-return Scaffold
-  body: Text 'Hello'
-""";
-      final output = parser.parse(input);
-      expect(output, isNot(contains('@Default(')));
-    });
-  });
-
-  // ─────────────────────────────────────────────────────────────────
-  group('@Mixin', () {
-    test('Card gets mixin color injected', () {
-      // Use simple color value without [] to avoid regex issues
-      final input = """
-@Mixin('DarkMode', ['Card'], {'color': 'Colors.black'})
-
-return Scaffold
-  body: Card
-    child: Text 'Hi'
-""";
-      final output = parser.parse(input);
-      expect(output, contains('Colors.black'));
-    });
-
-    test('@Mixin definition NOT in output', () {
-      final input = """
-@Mixin('DarkMode', ['Card'], {
-  'color': 'Colors.grey[900]'
-})
-
-return Scaffold
-  body: Text 'Hi'
-""";
-      final output = parser.parse(input);
-      expect(output, isNot(contains('@Mixin(')));
     });
   });
 
@@ -550,10 +432,7 @@ return Scaffold
       expect(output, contains('style: TextStyle(fontSize: 16'));
 
       // Annotations removed
-      expect(output, isNot(contains('@Alias(')));
-      expect(output, isNot(contains('@Default(')));
       expect(output, isNot(contains('@Fragment(')));
-      expect(output, isNot(contains('@Mixin(')));
 
       // Block bodies preserved
       expect(output, contains('_counter++;'));

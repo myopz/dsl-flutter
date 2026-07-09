@@ -78,8 +78,6 @@ dsl_flutter setup
 import 'package:flutter/material.dart';
 import 'package:dsl_flutter/dsl_flutter.dart';
 
-@Alias('PrimaryButton', target: 'ElevatedButton')
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState => _HomePageState()
@@ -106,7 +104,7 @@ class _HomePageState extends State<HomePage> {
             Text '点击次数'
             Text '$_counter'
               style: Theme.of(context).textTheme.headlineMedium
-            @PrimaryButton
+            ElevatedButton
               onPressed: _increment
               child: Text '增加'
           ]
@@ -255,21 +253,9 @@ Column
 
 ## 🎨 高级特性
 
-### 组件别名
-
-```dart
-@Alias('PrimaryButton', target: 'ElevatedButton')
-
-// 使用
-@PrimaryButton(
-  onPressed: _onTap
-  child: Text '提交'
-)
-```
-
 ### 模板片段
 
-#### 定义片段
+定义片段
 
 ```dart
 @Fragment('UserCard', ['name', 'email', 'avatar'], '''
@@ -292,33 +278,6 @@ Card(
   name: '张三'
   email: 'zhangsan@example.com'
   avatar: 'https://example.com/avatar.jpg'
-```
-
-### 待实现功能
-
-#### 默认参数
-
-`未实现`
-
-```dart
-@Default('Card', {
-  'elevation': 4,
-  'margin': 'EdgeInsets.all(16)',
-  'shape': 'RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))'
-})
-
-```
-
-#### 混入
-
-`未实现`
-
-```dart
-@Mixin('CardStyle', ['Card', 'Container'], {
-  'elevation': 8,
-  'shape': 'RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))'
-})
-
 ```
 
 ---

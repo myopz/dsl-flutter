@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 // 自动生成代码 - 由 dsl_flutter 转换
 // 源文件: lib/pages/home.dui
-// 生成时间: 2026-06-26 16:05:42.837854
+// 生成时间: 2026-07-09 16:33:07.449220
 // 请勿手动修改
 // ═══════════════════════════════════════════════════════════
 
@@ -34,8 +34,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('DSL Flutter Demo',
-            style: TextStyle(fontSize: 16, color: Colors.black87)),
+        title: Text('DSL Flutter Demo'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 0,
         actions: [
@@ -53,31 +52,34 @@ class _HomePageState extends State<HomePage> {
         children: [
           // 计数器区域
           Container(
-              padding: EdgeInsets.all(16),
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(
-                    children: [
-                      Text('点击次数',
-                          style: TextStyle(fontSize: 14, color: Colors.grey)),
-                      Text('$_counter',
-                          style: Theme.of(context).textTheme.headlineMedium),
-                    ],
-                  ),
-                  ElevatedButton(
-                    onPressed: _increment,
-                    child: Text('增加',
-                        style: TextStyle(fontSize: 16, color: Colors.black87)),
-                  ),
-                  TextButton(
-                    onPressed: _addItem,
-                    child: Text('添加项目',
-                        style: TextStyle(fontSize: 16, color: Colors.black87)),
-                  ),
-                ],
-              )),
+            padding: EdgeInsets.all(16),
+            color: Theme.of(context).colorScheme.primaryContainer,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      '点击次数',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    Text(
+                      '$_counter',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: _increment,
+                  child: Text('增加'),
+                ),
+                TextButton(
+                  onPressed: _addItem,
+                  child: Text('添加项目'),
+                ),
+              ],
+            ),
+          ),
           // 列表区域
           Expanded(
             child: ListView.builder(
@@ -121,8 +123,7 @@ class _HomePageState extends State<HomePage> {
           leading: CircleAvatar(
             child: Text('${index + 1}'),
           ),
-          title: Text(title,
-              style: TextStyle(fontSize: 16, color: Colors.black87)),
+          title: Text(title),
           trailing: IconButton(
               icon: Icon(Icons.delete),
               onPressed: () {
@@ -131,9 +132,8 @@ class _HomePageState extends State<HomePage> {
                 });
               }),
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('点击了: $title',
-                    style: TextStyle(fontSize: 16, color: Colors.black87))));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text('点击了: $title')));
           }),
     );
   }

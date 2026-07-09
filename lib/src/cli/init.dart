@@ -83,8 +83,6 @@ import 'package:flutter/material.dart';
 // ============ DSL Flutter 示例 ============
 // 无需括号！用缩进表示层级
 
-@Alias('PrimaryButton', target: 'ElevatedButton')
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState => _HomePageState()
@@ -113,7 +111,7 @@ class _HomePageState extends State<HomePage> {
             Text '\$_counter'
               style: Theme.of(context).textTheme.headlineMedium
             SizedBox height: 20
-            PrimaryButton
+            ElevatedButton
               onPressed: _increment
               child: Text '增加'
           ]

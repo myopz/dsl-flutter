@@ -143,10 +143,6 @@ Column
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
-@Alias('PrimaryButton', target: 'ElevatedButton')
-@Alias('SecondaryButton', target: 'TextButton')
-@Default('Card', {'elevation': 4, 'margin': 'EdgeInsets.all(16)'})
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState => _HomePageState()  // ✅ 方法调用需要括号
@@ -187,7 +183,7 @@ class _HomePageState extends State<HomePage> {
                 Text '$_counter'  // ❌ Text不需要括号
                   style: Theme.of(context).textTheme.headlineMedium  // ✅ 方法调用需要括号
                 SizedBox height: 20  // ❌ SizedBox不需要括号
-                PrimaryButton  // ❌ Widget创建不需要括号（别名展开为ElevatedButton）
+                ElevatedButton  // ❌ Widget创建不需要括号（别名展开为ElevatedButton）
                   onPressed: _increment  // 方法引用（无括号）
                   child: Text '增加'  // ❌ Text不需要括号
               ]

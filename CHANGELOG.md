@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [1.0.0] - 2026-07-09
+
+### Changed
+- 移除 `@Mixin`,`@Alias`,`@Default` 注解，因为它在当前版本中没有太大作用, 只留下 `@Fragment`
 
 ## [1.0.0] - 2026-06-26
 

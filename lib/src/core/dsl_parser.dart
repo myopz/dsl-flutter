@@ -186,54 +186,17 @@ ${_cyan('💡 提示:')} 使用前缀 @ 可以无括号调用片段！
   Map<String, dynamic> _extractAnnotations(String source) {
     final annotations = <String, dynamic>{};
 
-    // @Alias('Name', target: 'Widget') — 引号可以是 ' 或 "
-    final aliasRegex =
-        RegExp(r'''@Alias\(['"]([^'"]+)['"],\s*target:\s*['"]([^'"]+)['"]\)''');
-    for (final match in aliasRegex.allMatches(source)) {
-      annotations['alias_${match.group(1)}'] = {
-        'type': 'alias',
-        'name': match.group(1),
-        'target': match.group(2),
-      };
-    }
-
-    // @Default('Widget', {'prop': value})
-    final defaultRegex =
-        RegExp(r'''@Default\(['"]([^'"]+)['"],\s*\{([^}]+)\}\)''');
-    for (final match in defaultRegex.allMatches(source)) {
-      final params = _parseParams(match.group(2)!);
-      annotations['default_${match.group(1)}'] = {
-        'type': 'default',
-        'target': match.group(1),
-        'params': params,
-      };
-    }
-
-    // @Mixin('Name', ['Target1', 'Target2'], {'prop': value})
-    final mixinRegex =
-        RegExp(r'''@Mixin\(['"]([^'"]+)['"],\s*\[([^\]]*)\],\s*\{([^}]+)\}\)''');
-    for (final match in mixinRegex.allMatches(source)) {
-      final targets = match.group(2)!
-          .split(',')
-          .map((t) {
-            var s = t.trim();
-            // 去掉引号
-            if ((s.startsWith("'") && s.endsWith("'")) ||
-                (s.startsWith('"') && s.endsWith('"'))) {
-              s = s.substring(1, s.length - 1);
-            }
-            return s;
-          })
-          .where((t) => t.isNotEmpty)
-          .toList();
-      final props = _parseParams(match.group(3)!);
-      annotations['mixin_${match.group(1)}'] = {
-        'type': 'mixin',
-        'name': match.group(1),
-        'targets': targets,
-        'props': props,
-      };
-    }
+    // // 此处留待其他注解的扩展,注意,@Alias 已不存在,仅供示例参考:
+    // // @Alias('Name', target: 'Widget') — 引号可以是 ' 或 "
+    // final aliasRegex =
+    //     RegExp(r'''@Alias\(['"]([^'"]+)['"],\s*target:\s*['"]([^'"]+)['"]\)''');
+    // for (final match in aliasRegex.allMatches(source)) {
+    //   annotations['alias_${match.group(1)}'] = {
+    //     'type': 'alias',
+    //     'name': match.group(1),
+    //     'target': match.group(2),
+    //   };
+    // }
 
     return annotations;
   }
@@ -278,10 +241,7 @@ ${_cyan('💡 提示:')} 使用前缀 @ 可以无括号调用片段！
       }
 
       // 检查是否是注解开始
-      if (trimmed.startsWith('@Alias') ||
-          trimmed.startsWith('@Default') ||
-          trimmed.startsWith('@Fragment') ||
-          trimmed.startsWith('@Mixin')) {
+      if (trimmed.startsWith('@Fragment')) {
         // 计算这行的括号深度
         parenDepth = 0;
         inString = false;
@@ -1031,13 +991,10 @@ _NodeKind _classifyLine(String line) {
 
   // `@` lines: distinguish annotation definitions from usages
   if (line.startsWith('@')) {
-    // Annotation definitions: @Alias(...), @Default(...), @Fragment(...), @Mixin(...)
+    // Annotation definitions: @Fragment(...)
     // These should have been removed by _removeAnnotationLines, but if they
     // survive (e.g. inside a class), treat as blockOpen (verbatim).
-    if (line.startsWith('@Alias(') ||
-        line.startsWith('@Default(') ||
-        line.startsWith('@Fragment(') ||
-        line.startsWith('@Mixin(')) {
+    if (line.startsWith('@Fragment(')) {
       return _NodeKind.blockOpen;
     }
     // `@override` — verbatim

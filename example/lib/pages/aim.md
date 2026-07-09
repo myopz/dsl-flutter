@@ -55,20 +55,6 @@ import 'package:dsl_flutter/dsl_flutter.dart';
 
 // ============ 注解定义 ============
 
-@Alias('PrimaryButton', target: 'ElevatedButton')
-@Alias('SecondaryButton', target: 'TextButton')
-@Alias('MainCard', target: 'Card')
-
-@Default('Card', {
-  'elevation': 4,
-  'margin': 'EdgeInsets.all(16)',
-  'shape': 'RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))'
-})
-
-@Default('Text', {
-  'style': 'TextStyle(fontSize: 16, color: Colors.black87)'
-})
-
 @Fragment('UserCard', ['name', 'email', 'avatar'], '''
 Card(
   child: Column(
@@ -84,10 +70,6 @@ Card(
   ),
 )
 ''')
-
-@Mixin('DarkMode', ['Card', 'Container', 'Scaffold'], {
-  'color': 'Colors.grey[900]'
-})
 
 // ============ 页面 ============
 
@@ -145,10 +127,10 @@ class _HomePageState extends State<HomePage> {
                     Text '$_counter'
                       style: Theme.of(context).textTheme.headlineMedium
                   ]
-                @PrimaryButton
+                ElevatedButton
                   onPressed: _increment
                   child: Text '增加'
-                @SecondaryButton
+                TextButton
                   onPressed: _addItem
                   child: Text '添加项目'
               ]
@@ -173,7 +155,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildItem(String title, int index) {
-    return @MainCard
+    return Card
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4)
       child: ListTile
         leading: CircleAvatar

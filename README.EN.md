@@ -79,8 +79,6 @@ Create `lib/pages/home.dui`:
 import 'package:flutter/material.dart';
 import 'package:dsl_flutter/dsl_flutter.dart';
 
-@Alias('PrimaryButton', target: 'ElevatedButton')
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState => _HomePageState()
@@ -107,7 +105,7 @@ class _HomePageState extends State<HomePage> {
             Text 'Click count'
             Text '$_counter'
               style: Theme.of(context).textTheme.headlineMedium
-            @PrimaryButton
+            ElevatedButton
               onPressed: _increment
               child: Text 'Increment'
           ]
@@ -253,22 +251,9 @@ Column
 
 ## 🎨 Advanced Features
 
-### Component Aliases
-
-```dart
-@Alias('PrimaryButton', target: 'ElevatedButton')
-
-// Usage
-@PrimaryButton(
-  onPressed: _onTap
-  child: Text 'Submit'
-)
-```
-
-
 ### Template Fragments (Two Calling Styles)
 
-#### Define Fragment
+Define Fragment
 
 ```dart
 @Fragment('UserCard', ['name', 'email', 'avatar'], '''
@@ -292,32 +277,6 @@ Card(
   email: 'john@example.com'
   avatar: 'https://example.com/avatar.jpg'
 )
-```
-
-### TODO
-
-#### Default Parameters
-
-not implemented
-
-```dart
-@Default('Card', {
-  'elevation': 4,
-  'margin': 'EdgeInsets.all(16)',
-  'shape': 'RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))'
-})
-```
-
-#### Mixins
-
-not implemented
-
-```dart
-@Mixin('CardStyle', ['Card', 'Container'], {
-  'elevation': 8,
-  'shape': 'RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))'
-})
-
 ```
 
 ---
