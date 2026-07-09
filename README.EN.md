@@ -356,12 +356,12 @@ If DSL Flutter has been helpful to you, please consider donating to support the 
   <tr>
     <td align="center" width="50%">
       <h3>Alipay</h3>
-      <img src="assets/alipay_qr.jpg" width="200" alt="Alipay QR Code">
+      <img src="./assets/alipay_qr.jpg" width="200" alt="Alipay QR Code">
       <p><small>Scan with Alipay</small></p>
     </td>
     <td align="center" width="50%">
       <h3>WeChat Pay</h3>
-      <img src="assets/wechat_qr.jpg" width="200" alt="WeChat QR Code">
+      <img src="./assets/wechat_qr.jpg" width="200" alt="WeChat QR Code">
       <p><small>Scan with WeChat</small></p>
     </td>
   </tr>
@@ -392,7 +392,6 @@ This project is licensed under the [MIT License](LICENSE).
 ## 💬 Community & Support
 
 - [GitHub Issues](https://github.com/myopz/dsl-flutter/issues) - Bug reports & feature requests
-- [GitHub Discussions](https://github.com/myopz/dsl-flutter/discussions) - Discussions & Q&A
 - [Email](mailto:mr_jianlong@163.com) - Contact via email <mr_jianlong@163.com>
 
 ---
