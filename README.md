@@ -44,8 +44,10 @@ DSL Flutter 🚀
 
 ```yaml
 dev_dependencies:
-  dsl_flutter: ^1.0.0
   build_runner: ^2.4.0
+  # dsl_flutter: ^1.0.0 # 未发布 pub.dev，建议从源代码安装
+  dsl_flutter:
+    path: /path/to/dsl-flutter  # 本地路径
 ```
 
 然后运行：
@@ -58,6 +60,22 @@ flutter pub get
 
 ```bash
 dart pub global activate dsl_flutter
+
+# 或者从源代码安装
+dart pub global activate --source path /path/to/dsl_flutter
+
+```
+---
+
+## 📚 CLI 命令
+
+```bash
+dsl_flutter --help       # 显示帮助
+dsl_flutter setup        # 配置开发环境
+dsl_flutter init         # 初始化项目
+dsl_flutter watch        # 监听文件并自动转换
+dsl_flutter build        # 一次性构建所有文件
+dsl_flutter check        # 检查文件格式
 ```
 
 ---
@@ -323,19 +341,6 @@ targets:
         enabled: true
         generate_for:
           - lib/**/*.dui
-```
-
----
-
-## 📚 CLI 命令
-
-```bash
-dsl_flutter --help       # 显示帮助
-dsl_flutter setup        # 配置开发环境
-dsl_flutter init         # 初始化项目
-dsl_flutter watch        # 监听文件并自动转换
-dsl_flutter build        # 一次性构建所有文件
-dsl_flutter check        # 检查文件格式
 ```
 
 ---

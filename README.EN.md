@@ -45,8 +45,10 @@ DSL Flutter 🚀
 
 ```yaml
 dev_dependencies:
-  dsl_flutter: ^1.0.0
   build_runner: ^2.4.0
+  # dsl_flutter: ^1.0.0 # Not published to pub.dev, recommend to install from source
+  dsl_flutter:
+    path: /path/to/dsl-flutter  # Local path
 ```
 
 Then run:
@@ -59,6 +61,22 @@ flutter pub get
 
 ```bash
 dart pub global activate dsl_flutter
+
+# Alternatively, install from source
+dart pub global activate --source path /path/to/dsl_flutter
+```
+
+---
+
+## 📚 CLI Commands
+
+```bash
+dsl_flutter --help       # Show help
+dsl_flutter setup        # Setup development environment
+dsl_flutter init         # Initialize project
+dsl_flutter watch        # Watch files and auto-convert
+dsl_flutter build        # Build all files once
+dsl_flutter check        # Check file formatting
 ```
 
 ---
@@ -322,19 +340,6 @@ targets:
         enabled: true
         generate_for:
           - lib/**/*.dui
-```
-
----
-
-## 📚 CLI Commands
-
-```bash
-dsl_flutter --help       # Show help
-dsl_flutter setup        # Setup development environment
-dsl_flutter init         # Initialize project
-dsl_flutter watch        # Watch files and auto-convert
-dsl_flutter build        # Build all files once
-dsl_flutter check        # Check file formatting
 ```
 
 ---
