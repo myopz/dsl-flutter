@@ -27,14 +27,13 @@ DSL Flutter 🚀
 
 ## ✨ 特性
 
-- 🎯 **零括号** - 告别 `(`, `)`, `,` 的嵌套地狱
+- 🎯 **少括号** - Widget 树用缩进表达，告别深层 `( )` 嵌套（列表仍用 `[]`，方法/lambda 仍用 `{}`）
 - 📦 **缩进即层级** - 用缩进直观表达 Widget 树结构
-- 🎨 **组件别名** - 为常用组件创建简短别名
-- 🧩 **模板片段** - 复用 UI 结构，DRY 原则
+- 🧩 **模板片段** - `@Fragment` 复用 UI 结构，DRY 原则
 - ⚡ **编译时转换** - 零运行时开销，性能无损
-- 🔌 **完全通用** - 支持所有 Flutter 及第三方组件
+- 🔌 **自定义 Widget** - 支持内置与自定义组件（点分命名构造如 `MyView.builder`）
 - 🛡️ **防格式化** - 一键配置，防止 IDE 自动破坏 DSL
-- 🧪 **完整测试** - 100% 测试覆盖率保证
+- 🧪 **场景测试** - 覆盖常用 Widget 树 / Fragment / 块体路径
 
 ---
 
@@ -58,13 +57,19 @@ flutter pub get
 
 ### 方式二：全局安装 CLI 工具
 
+包尚未发布到 pub.dev，请从本地源码激活：
+
 ```bash
-dart pub global activate dsl_flutter
+# 在仓库根目录执行
+dart pub global activate --source path .
 
-# 或者从源代码安装
-dart pub global activate --source path /path/to/dsl_flutter
+# 或指定绝对路径
+dart pub global activate --source path /path/to/dsl-flutter
 
+# export path
+export PATH="$PATH:$HOME/.pub-cache/bin"
 ```
+
 ---
 
 ## 📚 CLI 命令
@@ -98,16 +103,16 @@ import 'package:dsl_flutter/dsl_flutter.dart';
 
 class HomePage extends StatefulWidget {
   @override
-  _HomePageState createState => _HomePageState()
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _counter = 0
+  int _counter = 0;
 
   void _increment() {
     setState(() {
-      _counter++
-    })
+      _counter++;
+    });
   }
 
   @override
@@ -132,6 +137,8 @@ class _HomePageState extends State<HomePage> {
   }
 }
 ```
+
+> 字段、构造与箭头方法等标准 Dart 声明需保留行尾 `;`；`if` / `for` / 三元等控制流请写在 `{}` 方法或 lambda 体内（原样透传），不要当作缩进 DSL 节点。
 
 ### 3. 运行代码生成
 
@@ -249,22 +256,28 @@ MyCustomWidget
   child: Text '内容'
 ```
 
-### 条件渲染
+### 控制流（在块体内写标准 Dart）
+
+缩进 DSL **不**解析 `if` / `for` / 三元为 Widget 节点。把它们放在方法或 lambda 的 `{}` 里即可原样输出：
 
 ```dart
-Column
-  children: [
-    if (isLoggedIn){
-      Text '欢迎回来'
-    } else {
-      LoginButton()
-    }
+Widget build(BuildContext context) {
+  return Column
+    children: [
+      ..._buildItems()
+    ]
+}
 
-    for (var item in items)
-      ListTile
-        title: Text item.name
-        onTap: () => _handleTap(item)
-  ]
+List<Widget> _buildItems() {
+  return [
+    if (isLoggedIn) Text('欢迎回来') else LoginButton(),
+    for (final item in items)
+      ListTile(
+        title: Text(item.name),
+        onTap: () => _handleTap(item),
+      ),
+  ];
+}
 ```
 
 ---

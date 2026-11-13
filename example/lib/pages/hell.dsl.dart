@@ -1,12 +1,4 @@
-// ═══════════════════════════════════════════════════════════
-// 自动生成代码 - 由 dsl_flutter 转换
-// 源文件: lib/pages/hell.dui
-// 生成时间: 2026-07-09 16:33:07.368734
-// 请勿手动修改
-// ═══════════════════════════════════════════════════════════
-
 import 'package:flutter/material.dart';
-
 class TestPage extends StatelessWidget {
   const TestPage({super.key});
   @override
@@ -29,8 +21,7 @@ class TestPage extends StatelessWidget {
                     onPressed: () => {},
                     child: Text('点击'),
                   ),
-                  Text(
-                    'Hello World',
+                  Text('Hello World',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,

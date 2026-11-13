@@ -27,7 +27,9 @@ example/
   ├── lib/
   │   ├── main.dart
   │   └── pages/
-  │       ├── home.dui          ← DSL文件
+  │       ├── home.dui          ← DSL 文件（常用页面）
+  │       ├── complex.dui       ← 复杂场景（Fragment / ListView.builder / lambda / return leaf）
+  │       ├── test.dui / hell.dui
   │       ├── home.dsl.dart         ← 生成文件（自动）
   │       ├── test.dui       ← DSL文件
   │       └── test.dsl.dart      ← 生成文件（自动）

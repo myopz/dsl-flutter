@@ -1,0 +1,196 @@
+// example/lib/pages/complex.dui
+// 覆盖：深层嵌套、ListView.builder、属性 lambda + 兄弟属性、
+// TextStyle 树、@Fragment、方法体内控制流、return leaf、Theme.of、
+// Stack/Align/Positioned、FloatingActionButton.small 等
+import 'package:flutter/material.dart';
+
+@Fragment('SectionHeader', ['title', 'subtitle'], '''
+Padding(
+  padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      SizedBox(height: 4),
+      Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey)),
+    ],
+  ),
+)
+''')
+
+class ComplexPage extends StatefulWidget {
+  const ComplexPage({super.key});
+  @override
+  State<ComplexPage> createState() => _ComplexPageState();
+}
+
+class _ComplexPageState extends State<ComplexPage> {
+  bool _expanded = true;
+  String _filter = 'all';
+  final List<String> _tags = ['dart', 'flutter', 'dsl'];
+
+  void _toggleExpanded() {
+    setState(() {
+      _expanded = !_expanded;
+    });
+  }
+
+  void _setFilter(String value) {
+    setState(() {
+      _filter = value;
+    });
+  }
+
+  /// 控制流写在方法体内（原样 Dart），再交给 DSL 树组装。
+  /// 行首避免 Widget 构造括号，以免被 format check 误报。
+  List<Widget> _buildFilterChips() {
+    final chips = <Widget>[];
+    for (final tag in _tags) {
+      chips.add(FilterChip(label: Text(tag), selected: _filter == tag, onSelected: (_) => _setFilter(tag)));
+    }
+    if (_filter != 'all') {
+      chips.add(TextButton(onPressed: () => _setFilter('all'), child: const Text('清除')));
+    }
+    return chips;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold
+      appBar: AppBar
+        title: Text '复杂场景'
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary
+        actions: [
+          IconButton
+            icon: Icon Icons.info_outline
+            onPressed: () {
+              showDialog(context: context, builder: (ctx) => AlertDialog(title: const Text('说明'), content: const Text('本页覆盖深层嵌套、Fragment、lambda 兄弟属性等场景'), actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('关闭'))]));
+            }
+        ]
+      body: ListView
+        children: [
+          @SectionHeader
+            title: '片段与过滤器'
+            subtitle: 'Fragment 展开 + 方法体内 for/if'
+
+          Padding
+            padding: EdgeInsets.symmetric(horizontal: 16)
+            child: Wrap
+              children: _buildFilterChips()
+
+          @SectionHeader
+            title: '属性 lambda 与兄弟属性'
+            subtitle: 'onPressed 后仍有 child，需生成 },'
+
+          Padding
+            padding: EdgeInsets.all(16)
+            child: ElevatedButton
+              onPressed: () {
+                _toggleExpanded();
+              }
+              child: Text _expanded ? '收起详情' : '展开详情'
+
+          _buildDetailsCard()
+
+          @SectionHeader
+            title: 'ListView.builder 与列表项'
+            subtitle: '内置 Widget.method + 项内多 lambda'
+
+          SizedBox
+            height: 220
+            child: ListView.builder
+              itemCount: _tags.length
+              itemBuilder: (context, index) {
+                return _buildTagTile(_tags[index], index);
+              }
+
+          @SectionHeader
+            title: 'Stack / Positioned / 对齐'
+            subtitle: '深层 children 与 Alignment 枚举属性'
+
+          SizedBox
+            height: 140
+            child: Stack
+              children: [
+                Container
+                  color: Colors.blue.shade50
+                Align
+                  alignment: Alignment.center
+                  child: Text '居中层'
+                    style: TextStyle
+                      fontSize: 20
+                      fontWeight: FontWeight.bold
+                Positioned
+                  right: 12
+                  bottom: 12
+                  child: FloatingActionButton.small
+                    onPressed: _toggleExpanded
+                    child: Icon Icons.refresh
+              ]
+
+          @SectionHeader
+            title: 'return 同行 leaf'
+            subtitle: '_simpleLabel 使用 return Text'
+
+          Padding
+            padding: EdgeInsets.all(16)
+            child: _simpleLabel('hello from return leaf')
+
+          SizedBox
+            height: 24
+        ]
+  }
+
+  /// 条件 UI 放在方法里，避免把 if 写成 DSL 节点
+  Widget _buildDetailsCard() {
+    if (!_expanded) {
+      return SizedBox.shrink();
+    }
+    return Container
+      margin: EdgeInsets.symmetric(horizontal: 16)
+      padding: EdgeInsets.all(12)
+      decoration: BoxDecoration
+        color: Theme.of(context).colorScheme.primaryContainer
+        borderRadius: BorderRadius.circular(8)
+      child: Column
+        crossAxisAlignment: CrossAxisAlignment.start
+        children: [
+          Text '嵌套 TextStyle'
+            style: TextStyle
+              fontSize: 16
+              fontWeight: FontWeight.w600
+              color: Theme.of(context).colorScheme.onPrimaryContainer
+          SizedBox
+            height: 8
+          Text '过滤器 $_filter'
+            style: TextStyle
+              fontSize: 14
+              color: Colors.black87
+        ]
+  }
+
+  Widget _buildTagTile(String tag, int index) {
+    return Card
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4)
+      child: ListTile
+        leading: CircleAvatar
+          child: Text '${index + 1}'
+        title: Text tag
+          style: TextStyle
+            fontWeight: FontWeight.w500
+        subtitle: Text 'tag #$index'
+        trailing: IconButton
+          icon: Icon Icons.more_vert
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('选中 $tag')));
+          }
+        onTap: () {
+          _setFilter(tag);
+        };
+  }
+
+  /// return 同行 leaf（无额外属性）
+  Widget _simpleLabel(String text) {
+    return Text '$text';
+  }
+}

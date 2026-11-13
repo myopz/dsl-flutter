@@ -2,6 +2,8 @@
 
 import 'package:ansicolor/ansicolor.dart';
 
+import '../utils/formatter_checker.dart';
+
 /// 片段定义
 class FragmentDefinition {
   final String name;
@@ -66,45 +68,18 @@ class DSLParser {
     return _applyAnnotations(transformed, annotations);
   }
 
-  /// 智能检测：检查是否被格式化破坏
+  /// 智能检测：检查是否被格式化破坏（与 CLI check 共用 FormatterChecker）
   void _checkFormatting(String source) {
     if (_hasWarned) return;
 
-    final lines = source.split('\n');
-    var hasIssue = false;
-    var issueLine = -1;
-    var issueDetail = '';
+    final issues = FormatterChecker().check(source);
+    if (issues.isEmpty) return;
 
-    for (var i = 0; i < lines.length && i < 20; i++) {
-      final line = lines[i].trim();
-      if (line.isEmpty) continue;
-
-      // 检测 Text('Hello') 这种格式（说明被格式化破坏）
-      if (RegExp(r'\b(Text|Icon|Image|Card|Container)\s*\([^)]*\)').hasMatch(line)) {
-        // 排除方法调用
-        if (!_isMethodCall(line)) {
-          hasIssue = true;
-          issueLine = i + 1;
-          issueDetail = 'Widget "${_getWidgetName(line)}" 带了多余的括号';
-          break;
-        }
-      }
-
-      // 检测缩进是不是2的倍数
-      final indent = lines[i].length - lines[i].trimLeft().length;
-      if (indent > 0 && indent % 2 != 0) {
-        hasIssue = true;
-        issueLine = i + 1;
-        issueDetail = '缩进 ${indent} 个空格，应该是 2 的倍数';
-        break;
-      }
-    }
-
-    if (hasIssue) {
-      print('''
+    final issueDetail = issues.first;
+    print('''
 ${_yellow('⚠️  检测到 DSL 文件可能被格式化工具破坏了！')}
 
-第 $issueLine 行: $issueDetail
+$issueDetail
 
 这通常是因为 VS Code 自动格式化了 .dui 文件。
 
@@ -115,20 +90,7 @@ ${_yellow('解决方案:')}
 
 ${_yellow('继续转换... (但可能需要手动修复)')}
 ''');
-      _hasWarned = true;
-    }
-  }
-
-  bool _isMethodCall(String line) {
-    final methods = [
-      'setState', 'Theme.of', 'MediaQuery.of', 'Navigator.of',
-      'print', 'debugPrint', 'showDialog', 'showModalBottomSheet',
-    ];
-    return methods.any((m) => line.contains(m));
-  }
-
-  String _getWidgetName(String line) {
-    return line.split(' ').first;
+    _hasWarned = true;
   }
 
   /// 提取片段定义
@@ -392,6 +354,48 @@ ${_cyan('💡 提示:')} 使用前缀 @ 可以无括号调用片段！
     }
 
     return false;
+  }
+
+  /// Enum / Material const prefixes that must stay property values
+  /// (not wrapped as `MainAxisAlignment()` / `Colors.blue()`).
+  ///
+  /// Intentionally excludes `TextStyle` / `BoxDecoration` / etc. — those are
+  /// nested constructor trees in DSL (`style: TextStyle` + indented fields).
+  bool _looksLikeEnumOrConstPrefix(String name) {
+    const exact = {
+      'Colors',
+      'Icons',
+      'Fonts',
+      'FontWeight',
+      'FontStyle',
+      'Brightness',
+      'TextDirection',
+      'TextAlign',
+      'TextOverflow',
+      'TextBaseline',
+      'Clip',
+      'BlendMode',
+      'BoxFit',
+      'ImageRepeat',
+      'FilterQuality',
+      'TargetPlatform',
+      'MainAxisSize',
+      'MainAxisAlignment',
+      'CrossAxisAlignment',
+      'VerticalDirection',
+      'HitTestBehavior',
+      'DragStartBehavior',
+      'EdgeInsets',
+      'BorderRadius',
+      'Radius',
+      'Offset',
+      'Duration',
+      'Curves',
+    };
+    if (exact.contains(name)) return true;
+    // Alignment / Axis cover *Alignment / *Axis enum types not listed above
+    const suffixes = ['Alignment', 'Axis'];
+    return suffixes.any(name.endsWith);
   }
 
   Map<String, dynamic> _parseParams(String paramsStr) {
@@ -694,7 +698,7 @@ String _transformIndents(String source) {
 
   // Pass 2: emit Dart code from the tree
   final result = StringBuffer();
-  _emitTree(root, result, 0, isRoot: true);
+  _emitTree(root, result, 0);
   return result.toString();
 }
 
@@ -757,22 +761,43 @@ _TreeNode _buildTree(String source) {
 }
 
 /// Pass 2: Recursively emit Dart code from the tree.
-void _emitTree(_TreeNode node, StringBuffer result, int depth,
-    {bool isRoot = false}) {
+void _emitTree(_TreeNode node, StringBuffer result, int depth) {
   for (var i = 0; i < node.children.length; i++) {
-    final child = node.children[i];
-    final isLast = i == node.children.length - 1;
-    _emitNode(child, result, depth, isLast);
+    _emitNode(node.children[i], result, depth, node.children, i);
   }
 }
 
+/// Whether a `}` / `};` closes a property lambda (`onPressed: () {`) and
+/// more sibling properties follow — those need `},` not bare `}`.
+bool _propertyLambdaNeedsComma(List<_TreeNode> siblings, int index) {
+  if (index <= 0) return false;
+  final prev = siblings[index - 1];
+  if (prev.kind != _NodeKind.blockBodyOpen) return false;
+  if (!prev.line.contains(':')) return false;
+  for (var i = index + 1; i < siblings.length; i++) {
+    final next = siblings[i];
+    if (next.kind == _NodeKind.blockClose &&
+        (next.line == ']' || next.line == '];')) {
+      continue;
+    }
+    return true;
+  }
+  return false;
+}
+
 /// Emit a single node and (recursively) its children.
-void _emitNode(_TreeNode node, StringBuffer result, int depth, bool isLast) {
+void _emitNode(
+  _TreeNode node,
+  StringBuffer result,
+  int depth,
+  List<_TreeNode> siblings,
+  int index,
+) {
   final indent = '  ' * depth;
 
   switch (node.kind) {
     case _NodeKind.root:
-      _emitTree(node, result, depth, isRoot: true);
+      _emitTree(node, result, depth);
       return;
 
     case _NodeKind.comment:
@@ -800,6 +825,7 @@ void _emitNode(_TreeNode node, StringBuffer result, int depth, bool isLast) {
       // Method/lambda body opener: `void _f() {`, `setState(() {`,
       // `onPressed: () {`, `itemBuilder: (context, index) {`
       // Emit verbatim; children are statements emitted verbatim.
+      // Closing `}` is a sibling blockClose (see _propertyLambdaNeedsComma).
       result.writeln('$indent${node.line}');
       _emitTree(node, result, depth + 1);
       return;
@@ -810,31 +836,61 @@ void _emitNode(_TreeNode node, StringBuffer result, int depth, bool isLast) {
       return;
 
     case _NodeKind.blockClose:
-      // `}` closes a Dart block body (method/lambda) — emit verbatim.
-      // `};` closes a lambda property in DSL shorthand where the `;` also
-      // terminates the enclosing `return Widget(...)` statement. We drop the
-      // `;` here because the returnWidget emitter adds its own `);` closer.
+      // `}` closes a Dart block body (method/lambda).
+      // `};` drops `;` — returnWidget / property emitters add their own closers.
       // `]` and `];` are no-ops — list closers are emitted by listOpen/propertyWidget.
-      if (node.line == '}') {
-        result.writeln('$indent}');
-      } else if (node.line == '};') {
-        result.writeln('$indent}');
+      if (node.line == '}' || node.line == '};') {
+        final comma =
+            _propertyLambdaNeedsComma(siblings, index) ? ',' : '';
+        result.writeln('$indent}$comma');
       }
       // `]` and `];` → no output
       return;
 
     case _NodeKind.returnWidget:
       // `return Scaffold` → `return Scaffold(` ... `);`
-      // `return @MainCard` → `return MainCard(` ... `);` (alias applied later)
-      final returnMatch = RegExp(r'return\s+@?([\w.]+)').firstMatch(node.line);
+      // `return Text 'Hi'` → `return Text('Hi');`
+      // `return @MainCard` → `return MainCard(` ... `);`
+      var line = node.line;
+      final hadSemi = line.endsWith(';');
+      if (hadSemi) line = line.substring(0, line.length - 1).trim();
+
+      final returnMatch = RegExp(r'return\s+(.+)$').firstMatch(line);
       if (returnMatch == null) {
         result.writeln('$indent${node.line}');
         return;
       }
-      final widgetName = returnMatch.group(1)!;
-      result.writeln('${indent}return $widgetName(');
-      _emitTree(node, result, depth + 1);
-      result.writeln('$indent);');
+      var rest = returnMatch.group(1)!.trim();
+      if (rest.startsWith('@')) rest = rest.substring(1);
+
+      // Bare widget name: `return Scaffold` / `return Text`
+      final bareName = RegExp(r'^([\w.]+)$').firstMatch(rest);
+      if (bareName != null) {
+        final widgetName = bareName.group(1)!;
+        if (node.children.isNotEmpty) {
+          result.writeln('${indent}return $widgetName(');
+          _emitTree(node, result, depth + 1);
+          result.writeln('$indent);');
+        } else {
+          result.writeln('${indent}return $widgetName();');
+        }
+        return;
+      }
+
+      // Leaf with args: `return Text 'Hi'` / `return Text('Already')`
+      final hasChildren = node.children.isNotEmpty;
+      if (hasChildren) {
+        final m = RegExp(r'^([\w.]+)\s+(.+)$').firstMatch(rest);
+        if (m != null && _isWidgetNameSimple(m.group(1)!)) {
+          result.writeln('${indent}return ${m.group(1)}(${m.group(2)},');
+        } else {
+          result.writeln('${indent}return $rest(');
+        }
+        _emitTree(node, result, depth + 1);
+        result.writeln('$indent);');
+      } else {
+        result.writeln('${indent}return ${_convertLeafValue(rest)};');
+      }
       return;
 
     case _NodeKind.propertyWidget:
@@ -1007,21 +1063,42 @@ _NodeKind _classifyLine(String line) {
   }
 
   // Lines ending with `{` are block-body openers (methods, lambdas)
-  // This catches: `void _f() {`, `setState(() {`, `onPressed: () {`,
-  // `itemBuilder: (context, index) {`, `class X {`, `Widget build(...) {`
-  // We distinguish class/method-decl blockOpen from lambda blockBodyOpen by
-  // whether the line starts with a declaration keyword.
+  // Method decls → blockOpen; property lambdas / setState → blockBodyOpen.
   if (line.endsWith('{')) {
-    if (line.startsWith('class ') || line.startsWith('Widget ') ||
-        line.startsWith('void ') || line.startsWith('@override')) {
+    if (line.startsWith('class ') || line.startsWith('@override')) {
       return _NodeKind.blockOpen;
     }
-    // Everything else ending with `{` is a block body (lambda, setState, etc.)
+    // Property/callback bodies: `onPressed: () {`, `itemBuilder: (c, i) {`
+    if (line.contains(':')) {
+      return _NodeKind.blockBodyOpen;
+    }
+    // Inline helpers: `setState(() {`, `showDialog(...`
+    if (RegExp(r'^(setState|showDialog|showModalBottomSheet)\s*\(')
+        .hasMatch(line)) {
+      return _NodeKind.blockBodyOpen;
+    }
+    // Method declarations: `void f() {`, `Widget build(...) {`,
+    // `List<Widget> _build() {`, `Future<void> load() async {`
+    if (RegExp(r'\w+\s*\(.*\)\s*(?:async\s*)?\{$').hasMatch(line)) {
+      return _NodeKind.blockOpen;
+    }
+    // Bare lambdas: `() {`, `(context, index) {`
     return _NodeKind.blockBodyOpen;
   }
 
-  // `return Widget` or `return @Annotation` (with optional trailing `;`)
+  // `return Widget` / `return Text 'Hi'` — Capitalized / @fragment targets.
+  // `return chips;` / `return _foo;` stay verbatim (fieldDecl).
   if (line.startsWith('return ')) {
+    final rest = line
+        .substring('return '.length)
+        .trim()
+        .replaceAll(RegExp(r';\s*$'), '');
+    if (RegExp(r'^@?[A-Z]').hasMatch(rest)) {
+      return _NodeKind.returnWidget;
+    }
+    if (line.endsWith(';')) {
+      return _NodeKind.fieldDecl;
+    }
     return _NodeKind.returnWidget;
   }
 
@@ -1030,42 +1107,40 @@ _NodeKind _classifyLine(String line) {
     return _NodeKind.listOpen;
   }
 
-  // `key: value` — property
-  if (line.contains(':')) {
+  // `key: value` — property (must start with identifier+)
+  // Do NOT use line.contains(':') — statements like
+  // `chips.add(Foo(label: x));` contain colons in named args.
+  if (RegExp(r'^\w+:').hasMatch(line)) {
     final colonIdx = line.indexOf(':');
     final value = line.substring(colonIdx + 1).trim();
     // Strip trailing `;` for classification purposes
     final valueNoSemi = value.replaceAll(RegExp(r';\s*$'), '');
 
-    // If value is a bare widget name (single Capitalized word, no dot)
-    // AND it's a known built-in widget → propertyWidget (potential parent)
-    // We require it to be a KNOWN widget to avoid matching `MainAxisAlignment`
-    // etc. Custom widgets (Capitalized, no dot) are also potential parents.
+    // Bare Capitalized name: built-in/custom widget parent, or enum-like value
     final bareWidgetMatch = RegExp(r'^([A-Z]\w*)$').firstMatch(valueNoSemi);
     if (bareWidgetMatch != null) {
       final name = bareWidgetMatch.group(1)!;
-      // Built-in widgets are always potential parents
-      if (builtInWidgets.contains(name)) {
-        return _NodeKind.propertyWidget;
+      if (_looksLikeEnumOrConstPrefix(name)) {
+        return _NodeKind.propertyValue;
       }
-      // Other Capitalized names: could be custom widgets OR enums like
-      // MainAxisAlignment. Heuristic: enum-like names are long and contain
-      // "Alignment"/"Axis"/"Color"/"Style". Treat as propertyValue if so.
-      // Otherwise treat as custom widget parent.
-      // Better: treat as propertyWidget (custom widgets are common in .dui)
+      // Built-in and custom widgets are potential parents
       return _NodeKind.propertyWidget;
     }
 
-    // `Widget.method` like `ListView.builder` → propertyWidget
-    final dottedWidgetMatch = RegExp(r'^([A-Z]\w*)\.(\w+)$').firstMatch(valueNoSemi);
+    // `Widget.method` like `ListView.builder` / `MyView.builder` → propertyWidget
+    // Enum/const access like `MainAxisAlignment.spaceAround` → propertyValue
+    final dottedWidgetMatch =
+        RegExp(r'^([A-Z]\w*)\.(\w+)$').firstMatch(valueNoSemi);
     if (dottedWidgetMatch != null) {
       final first = dottedWidgetMatch.group(1)!;
-      // Only treat as widget if first part is a known widget
+      if (_looksLikeEnumOrConstPrefix(first)) {
+        return _NodeKind.propertyValue;
+      }
       if (builtInWidgets.contains(first)) {
         return _NodeKind.propertyWidget;
       }
-      // Otherwise (MainAxisAlignment.spaceAround, EdgeInsets.all) → propertyValue
-      return _NodeKind.propertyValue;
+      // Custom Widget.namedCtor — treat as parent so indented children nest
+      return _NodeKind.propertyWidget;
     }
 
     // If value is `Widget 'arg'` or `Widget arg` (widget with leaf arg)

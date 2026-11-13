@@ -53,7 +53,9 @@ $generated
 
       // 格式化生成的代码
       try {
-        final formatter = DartFormatter();
+        final formatter = DartFormatter(
+          languageVersion: DartFormatter.latestLanguageVersion,
+        );
         final formatted = formatter.format(output);
         log.info('✅ 格式化成功');
         output = formatted;

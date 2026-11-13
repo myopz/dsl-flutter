@@ -28,14 +28,13 @@ DSL Flutter 🚀
 
 ## ✨ Features
 
-- 🎯 **Zero Brackets** - No more `(`, `)`, nesting hell
+- 🎯 **Fewer Brackets** - Indentation for widget trees (lists still use `[]`; methods/lambdas still use `{}`)
 - 📦 **Indentation as Hierarchy** - Express widget tree with indentation
-- 🎨 **Component Aliases** - Create short aliases for common widgets
-- 🧩 **Template Fragments** - Reusable UI structures (DRY)
+- 🧩 **Template Fragments** - Reuse UI with `@Fragment` (DRY)
 - ⚡ **Compile-time** - Zero runtime overhead
-- 🔌 **Universal** - Works with all Flutter and third-party widgets
+- 🔌 **Custom Widgets** - Built-in and custom widgets (including `MyView.builder`)
 - 🛡️ **Formatter Protection** - One-command setup to prevent IDE formatting issues
-- 🧪 **Fully Tested** - 100% test coverage guarantee
+- 🧪 **Scenario Tests** - Covers common widget-tree / Fragment / block-body paths
 
 ---
 
@@ -59,11 +58,17 @@ flutter pub get
 
 ### Option 2: Global CLI installation
 
-```bash
-dart pub global activate dsl_flutter
+The package is not published to pub.dev yet. Activate it from local source:
 
-# Alternatively, install from source
-dart pub global activate --source path /path/to/dsl_flutter
+```bash
+# From the repository root
+dart pub global activate --source path .
+
+# Or with an absolute path
+dart pub global activate --source path /path/to/dsl-flutter
+
+# export path
+export PATH="$PATH:$HOME/.pub-cache/bin"
 ```
 
 ---
@@ -99,16 +104,16 @@ import 'package:dsl_flutter/dsl_flutter.dart';
 
 class HomePage extends StatefulWidget {
   @override
-  _HomePageState createState => _HomePageState()
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _counter = 0
+  int _counter = 0;
 
   void _increment() {
     setState(() {
-      _counter++
-    })
+      _counter++;
+    });
   }
 
   @override
@@ -133,6 +138,8 @@ class _HomePageState extends State<HomePage> {
   }
 }
 ```
+
+> Keep trailing `;` on fields, constructors, and arrow methods. Put `if` / `for` / ternaries inside `{}` method or lambda bodies (emitted verbatim)—do not treat them as indented DSL nodes.
 
 ### 3. Run code generation
 
@@ -247,22 +254,28 @@ MyCustomWidget
   child: Text 'Content'
 ```
 
-### Conditional Rendering
+### Control flow (standard Dart inside block bodies)
+
+Indented DSL does **not** parse `if` / `for` / ternaries as widget nodes. Put them in method or lambda `{}` bodies to emit them verbatim:
 
 ```dart
-Column
-  children: [
-    if (isLoggedIn){
-      Text 'Welcome back'
-    } else {
-      LoginButton()
-    }
+Widget build(BuildContext context) {
+  return Column
+    children: [
+      ..._buildItems()
+    ]
+}
 
-    for (var item in items)
-      ListTile
-        title: Text item.name
-        onTap: () => _handleTap(item)
-  ]
+List<Widget> _buildItems() {
+  return [
+    if (isLoggedIn) Text('Welcome back') else LoginButton(),
+    for (final item in items)
+      ListTile(
+        title: Text(item.name),
+        onTap: () => _handleTap(item),
+      ),
+  ];
+}
 ```
 
 ---

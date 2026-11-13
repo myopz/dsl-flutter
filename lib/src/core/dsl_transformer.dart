@@ -6,7 +6,9 @@ import 'package:analyzer/dart/analysis/features.dart';
 
 /// AST转换器 - 优化和美化生成的代码
 class DSLTransformer {
-  final DartFormatter _formatter = DartFormatter();
+  final DartFormatter _formatter = DartFormatter(
+    languageVersion: DartFormatter.latestLanguageVersion,
+  );
 
   /// 转换并格式化代码
   String transform(String source) {

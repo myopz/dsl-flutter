@@ -5,6 +5,7 @@ import 'package:dsl_flutter/dsl_flutter.dart';
 // 导入生成的DSL文件
 import 'pages/test.dsl.dart';
 import 'pages/home.dsl.dart';
+import 'pages/complex.dsl.dart';
 
 void main() => runApp(const MyApp());
 
@@ -42,6 +43,7 @@ class _MainPageState extends State<MainPage> {
           // 使用DSL生成的Widget
           TestPage(),
           HomePage(),
+          ComplexPage(),
           SettingsPage(),
         ],
       ),
@@ -52,6 +54,7 @@ class _MainPageState extends State<MainPage> {
             _currentIndex = index;
           });
         },
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -60,6 +63,10 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: '首页',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_tree),
+            label: '复杂',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

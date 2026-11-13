@@ -419,19 +419,16 @@ return Scaffold
       final input = file.readAsStringSync();
       final output = parser.parse(input);
 
-      // Aliases applied
+      // Common widgets present
       expect(output, contains('ElevatedButton('));
       expect(output, contains('TextButton('));
       expect(output, contains('Card('));
 
-      // Fragment expanded
+      // Fragment expanded (params substituted)
       expect(output, contains("Text('张三'"));
       expect(output, contains('zhangsan@example.com'));
 
-      // Default params injected
-      expect(output, contains('style: TextStyle(fontSize: 16'));
-
-      // Annotations removed
+      // Annotations removed from output
       expect(output, isNot(contains('@Fragment(')));
 
       // Block bodies preserved
@@ -443,6 +440,129 @@ return Scaffold
 
       // ListView.builder
       expect(output, contains('ListView.builder('));
+
+      // Scaffold structure
+      expect(output, contains('return Scaffold('));
+      expect(output, contains('floatingActionButton: FloatingActionButton('));
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────
+  group('Golden: complex.dui', () {
+    test('complex.dui covers nested / fragment / lambda / return leaf', () {
+      final file = File('example/lib/pages/complex.dui');
+      final input = file.readAsStringSync();
+      final output = parser.parse(input);
+
+      expect(output, contains('class ComplexPage'));
+      expect(output, contains('ListView.builder('));
+      expect(output, contains('FloatingActionButton.small('));
+      expect(output, contains("return Text('\$text');"));
+      expect(output, contains('},')); // property lambda before sibling
+      expect(output, contains('alignment: Alignment.center,'));
+      expect(output, contains('chips.add('));
+      expect(
+        output.split('\n').where((l) => l.contains('chips.add(')),
+        everyElement(endsWith(';')),
+      );
+      expect(output, isNot(contains('@Fragment(')));
+      // Fragment expanded
+      expect(output, contains('片段与过滤器'));
+    });
+  });
+
+  group('Scenario matrix', () {
+    test('List<Widget> method body stays verbatim statements', () {
+      final input = '''
+class Demo {
+  List<Widget> _build() {
+    final chips = <Widget>[];
+    chips.add(Text('a'));
+    return chips;
+  }
+}
+''';
+      final output = parser.parse(input);
+      expect(output, contains('chips.add(Text(\'a\'));'));
+      expect(output, contains('return chips;'));
+      expect(output, isNot(contains('return chips();')));
+    });
+
+    test("return Text 'Hi' keeps leaf arg", () {
+      final output = parser.parse("return Text 'Hi'\n");
+      expect(output, contains("return Text('Hi');"));
+      expect(output, isNot(contains('return Text();')));
+    });
+
+    test('return Text with style children', () {
+      final input = '''
+return Text 'Hi'
+  style: TextStyle
+    fontSize: 16
+''';
+      final output = parser.parse(input);
+      expect(output, contains("return Text('Hi',"));
+      expect(output, contains('style: TextStyle('));
+      expect(output, contains('fontSize: 16,'));
+    });
+
+    test('property lambda before sibling emits },', () {
+      final input = '''
+return ElevatedButton
+  onPressed: () {
+    doSomething();
+  }
+  child: Text '点击'
+''';
+      final output = parser.parse(input);
+      expect(output, contains('onPressed: () {'));
+      expect(output, contains('},'));
+      expect(output, contains("child: Text('点击'),"));
+    });
+
+    test('bare enum-like value not wrapped as constructor', () {
+      final input = '''
+return Row
+  mainAxisAlignment: MainAxisAlignment
+  children: [
+    Text 'a'
+  ]
+''';
+      final output = parser.parse(input);
+      expect(output, contains('mainAxisAlignment: MainAxisAlignment,'));
+      expect(output, isNot(contains('MainAxisAlignment(')));
+    });
+
+    test('custom Widget.method nests children', () {
+      final input = '''
+return Scaffold
+  body: MyView.builder
+    itemCount: 3
+    itemBuilder: (c, i) {
+      return Text('\$i');
+    }
+''';
+      final output = parser.parse(input);
+      expect(output, contains('body: MyView.builder('));
+      expect(output, contains('itemCount: 3,'));
+      expect(output, contains('itemBuilder: (c, i) {'));
+      expect(output, isNot(contains('body: MyView.builder,')));
+    });
+
+    test('MainAxisAlignment.spaceAround stays property value', () {
+      final input = '''
+return Row
+  mainAxisAlignment: MainAxisAlignment.spaceAround
+  children: [
+    Text 'a'
+  ]
+''';
+      final output = parser.parse(input);
+      expect(
+        output,
+        contains('mainAxisAlignment: MainAxisAlignment.spaceAround,'),
+      );
+      expect(output, isNot(contains('MainAxisAlignment.spaceAround(')));
     });
   });
 }

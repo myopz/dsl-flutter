@@ -1,28 +1,77 @@
 /// 格式化检查器 - 检测DSL文件是否被自动格式化破坏
 class FormatterChecker {
+  static const List<String> _widgets = [
+    'Text',
+    'Image',
+    'Icon',
+    'Button',
+    'Card',
+    'Container',
+    'Row',
+    'Column',
+    'Stack',
+    'ListView',
+    'GridView',
+    'Scaffold',
+    'AppBar',
+    'FloatingActionButton',
+    'ElevatedButton',
+    'TextButton',
+    'OutlinedButton',
+    'SizedBox',
+    'Padding',
+    'Center',
+    'Align',
+    'Expanded',
+  ];
+
+  /// 行首 Widget 调用带括号：`Text('x')` / `child: Text('x')`
+  /// 使用 `\b` 避免把 `TextStyle` 误判为 `Text`
+  static final RegExp _redundantParenPattern = RegExp(
+    '^(?:\\w+:\\s*)?(${_widgets.join('|')})\\b\\s*\\(',
+  );
+
   List<String> check(String content) {
     final issues = <String>[];
     final lines = content.split('\n');
+    var inTripleQuoted = false;
+    String? tripleQuoteDelimiter;
 
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
       final trimmed = line.trim();
 
+      // 跟踪 ''' / """ 区域（@Fragment body 内是标准 Dart）
+      final quoteTransition = _updateTripleQuoteState(
+        trimmed,
+        inTripleQuoted,
+        tripleQuoteDelimiter,
+      );
+      final wasInTripleQuoted = inTripleQuoted;
+      inTripleQuoted = quoteTransition.inTripleQuoted;
+      tripleQuoteDelimiter = quoteTransition.delimiter;
+
       // 跳过空行
       if (trimmed.isEmpty) continue;
 
-      // 1. 检测多余的括号（Widget创建带了括号）
-      if (_isWidgetCreation(trimmed) && _hasRedundantParens(trimmed)) {
-        issues.add('第 ${i + 1} 行: Widget "${_getWidgetName(trimmed)}" 带了多余的括号');
+      // Fragment body（含起止行上的三引号内容）按标准 Dart 处理，不做 DSL 启发式
+      if (wasInTripleQuoted || inTripleQuoted) {
+        // 仍检测行尾空格（与 DSL 区域一致）
+        if (line != line.trimRight()) {
+          issues.add('第 ${i + 1} 行: 行尾有多余空格');
+        }
+        continue;
       }
 
-      // 2. 检测缩进异常（可能是格式化导致）
-      // 检查当前行和上一行（跳过空行）
-      if (i > 0) {
-        final prevLine = _findPreviousNonEmptyLine(lines, i);
-        if (prevLine != null && _hasIndentIssue(prevLine, line)) {
-          issues.add('第 ${i + 1} 行: 缩进可能被破坏');
-        }
+      // 1. 检测多余的括号（Widget 创建带了括号）
+      final widgetName = _findRedundantParenWidget(trimmed);
+      if (widgetName != null) {
+        issues.add('第 ${i + 1} 行: Widget "$widgetName" 带了多余的括号');
+      }
+
+      // 2. 检测缩进异常（仅奇数缩进 / 非 2 倍数）
+      if (_hasIndentIssue(line)) {
+        issues.add('第 ${i + 1} 行: 缩进可能被破坏');
       }
 
       // 3. 检测行尾多余空格（格式化常见问题）
@@ -34,56 +83,52 @@ class FormatterChecker {
     return issues;
   }
 
-  /// 查找前一个非空行
-  String? _findPreviousNonEmptyLine(List<String> lines, int currentIndex) {
-    for (var i = currentIndex - 1; i >= 0; i--) {
-      if (lines[i].trim().isNotEmpty) {
-        return lines[i];
+  /// 更新三引号字符串状态；返回更新后的状态
+  ({bool inTripleQuoted, String? delimiter}) _updateTripleQuoteState(
+    String trimmed,
+    bool inTripleQuoted,
+    String? delimiter,
+  ) {
+    if (!inTripleQuoted) {
+      // 进入：行内出现未闭合的 ''' 或 """
+      final single = "'''";
+      final double = '"""';
+      final singleIdx = trimmed.indexOf(single);
+      final doubleIdx = trimmed.indexOf(double);
+
+      if (singleIdx < 0 && doubleIdx < 0) {
+        return (inTripleQuoted: false, delimiter: null);
       }
+
+      // 取先出现的分隔符
+      final useSingle =
+          doubleIdx < 0 || (singleIdx >= 0 && singleIdx < doubleIdx);
+      final delim = useSingle ? single : double;
+      final start = useSingle ? singleIdx : doubleIdx;
+      final after = trimmed.substring(start + 3);
+      // 同一行内又闭合则仍在 DSL 区
+      if (after.contains(delim)) {
+        return (inTripleQuoted: false, delimiter: null);
+      }
+      return (inTripleQuoted: true, delimiter: delim);
     }
-    return null;
+
+    // 退出：找到匹配的结束分隔符
+    if (delimiter != null && trimmed.contains(delimiter)) {
+      return (inTripleQuoted: false, delimiter: null);
+    }
+    return (inTripleQuoted: true, delimiter: delimiter);
   }
 
-  bool _isWidgetCreation(String line) {
-    final widgets = [
-      'Text',
-      'Image',
-      'Icon',
-      'Button',
-      'Card',
-      'Container',
-      'Row',
-      'Column',
-      'Stack',
-      'ListView',
-      'GridView',
-      'Scaffold',
-      'AppBar',
-      'FloatingActionButton',
-      'ElevatedButton',
-      'TextButton',
-      'OutlinedButton',
-      'SizedBox',
-      'Padding',
-      'Center',
-      'Align',
-      'Expanded',
-    ];
-    final name = line.split(' ').first;
-    return widgets.contains(name);
-  }
-
-  bool _hasRedundantParens(String line) {
-    // 检测 Text('Hello') 这种格式
-    // 但排除方法调用
-    if (_isMethodCall(line)) return false;
-    return RegExp(
-      r'\b(Text|Icon|Image|Card|Container)\s*\([^)]*\)',
-    ).hasMatch(line);
+  /// 若行首（或 `prop:` 后）是带括号的 Widget 创建，返回 Widget 名；否则 null
+  String? _findRedundantParenWidget(String line) {
+    if (_isMethodCall(line)) return null;
+    final match = _redundantParenPattern.firstMatch(line);
+    return match?.group(1);
   }
 
   bool _isMethodCall(String line) {
-    final methods = [
+    const methods = [
       'setState',
       'Theme.of',
       'MediaQuery.of',
@@ -96,34 +141,16 @@ class FormatterChecker {
       'BorderRadius',
       'BoxDecoration',
       'TextStyle',
+      'SnackBar',
+      'NetworkImage',
     ];
     return methods.any((m) => line.contains(m));
   }
 
-  String _getWidgetName(String line) {
-    return line.split(' ').first;
-  }
-
-  bool _hasIndentIssue(String prevLine, String currLine) {
-    // 检测缩进是否被破坏
-    final prevIndent = prevLine.length - prevLine.trimLeft().length;
+  /// 缩进不是 2 的倍数时视为被破坏（嵌套闭合的大幅回落是合法的）
+  bool _hasIndentIssue(String currLine) {
     final currIndent = currLine.length - currLine.trimLeft().length;
-
-    // 如果缩进不是2的倍数，可能被格式化破坏了
-    if (currIndent % 2 != 0) return true;
-
-    // 如果缩进变化超过4，可能有问题
-    if ((currIndent - prevIndent).abs() > 4) {
-      // 但如果是 children: [ 这种特殊语法，允许大的缩进变化
-      final trimmed = currLine.trim();
-      if (trimmed.startsWith('children:') ||
-          trimmed == 'children' ||
-          trimmed == '[') {
-        return false;
-      }
-      return true;
-    }
-
-    return false;
+    if (currIndent == 0) return false;
+    return currIndent % 2 != 0;
   }
 }
